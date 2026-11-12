@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber Defense - ¡Protege la Cuenta!</title>
+
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --purple: #9475d1;
+        --purple-dark: #654b9c;
+        --purple-mid: #bba5e8;
+        --purple-soft: #eee8fa;
+        --purple-pale: #f8f5fd;
+        --ink: #332b40;
+        --muted: #766d83;
+        --line: #e5dcf2;
+        --green: #75b99b;
+        --red: #d98296;
+        --gold: #c5a45e;
+    }
+
+    body {
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        background: #ffffff;
+        color: var(--ink);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(ellipse at 8% 8%, rgba(221, 208, 248, .28), transparent 36%),
+            radial-gradient(ellipse at 94% 92%, rgba(235, 226, 250, .32), transparent 38%);
+        z-index: -1;
+    }
+
+    .container { width: min(1100px, 94%); margin: auto; padding: 25px 0 40px; }
+
+    header {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 22px 25px;
+        margin-bottom: 20px;
+        background: linear-gradient(120deg, #f4effd, #ebe3fa);
+        box-shadow: 0 8px 24px rgba(101, 75, 156, .08);
+    }
+    header h1 {
+        color: var(--purple-dark);
+        font-size: clamp(25px, 5vw, 42px);
+        letter-spacing: .5px;
+    }
+    header p { color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+    .status-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+    .stat {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fbfaff;
+        padding: 14px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .7px;
+    }
+    .stat span { display: block; color: var(--purple-dark); font-size: 25px; margin-top: 5px; }
+
+    .game { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .panel {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: #ffffff;
+        padding: 22px;
+        min-height: 350px;
+        box-shadow: 0 8px 24px rgba(101, 75, 156, .07);
+    }
+    .panel h2 { margin-bottom: 15px; color: var(--purple-dark); font-size: 19px; }
+
+    .terminal {
+        background: #f8f5fd;
+        border: 1px solid #e8e0f4;
+        border-radius: 12px;
+        padding: 15px;
+        height: 250px;
+        overflow-y: auto;
+        line-height: 1.65;
+        font-size: 14px;
+        color: #4e4659;
+    }
+    .danger { color: #c7657e; font-weight: 700; }
+    .warning { color: #a17b35; font-weight: 700; }
+    .success { color: #47896d; font-weight: 700; }
+
+    .task {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: #fdfcff;
+        transition: .2s;
+    }
+    .task:hover { border-color: var(--purple-mid); transform: translateY(-2px); }
+    .task.completed { border-color: #a8d5bf; background: #f1faf5; }
+    .task h3 { color: var(--purple-dark); margin-bottom: 7px; font-size: 16px; }
+    .task p { color: var(--muted); font-size: 13px; line-height: 1.5; margin-bottom: 12px; }
+
+    button {
+        border: 1px solid var(--purple);
+        border-radius: 10px;
+        background: var(--purple);
+        color: #ffffff;
+        padding: 11px 16px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 800;
+        transition: .2s;
+    }
+    button:hover:not(:disabled) {
+        background: var(--purple-dark);
+        border-color: var(--purple-dark);
+        box-shadow: 0 5px 14px rgba(101, 75, 156, .18);
+        transform: translateY(-1px);
+    }
+    button:disabled { opacity: .42; cursor: not-allowed; }
+
+    input {
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid #dcd2ed;
+        border-radius: 9px;
+        color: var(--ink);
+        padding: 11px;
+        font-family: inherit;
+        margin: 9px 0 10px;
+        outline: none;
+    }
+    input::placeholder { color: #a39aae; }
+    input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(148, 117, 209, .12); }
+
+    .strength { height: 8px; background: #eee9f5; border-radius: 99px; margin-bottom: 10px; overflow: hidden; }
+    .strength-bar { height: 100%; width: 0%; border-radius: 99px; transition: .3s; background: var(--green); }
+    #strengthText { color: var(--muted); font-size: 13px; }
+    .twofa-code { font-size: 25px; letter-spacing: 5px; color: var(--purple-dark); margin: 10px 0; font-weight: 800; }
+
+    .timer-container { margin: 18px 0; }
+    .timer { height: 13px; border: 1px solid #e3d8f1; border-radius: 99px; padding: 2px; background: #f6f2fb; overflow: hidden; }
+    .timer-fill { width: 100%; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #bba5e8, #9475d1); transition: width .1s linear; }
+
+    .alert {
+        padding: 15px 17px;
+        border: 1px solid #efcbd5;
+        border-radius: 13px;
+        background: #fff6f8;
+        margin-bottom: 18px;
+        color: #a94f67;
+        line-height: 1.5;
+        font-weight: 700;
+    }
+
+    .progress { width: 100%; height: 9px; border-radius: 99px; background: #eee9f5; margin-top: 10px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, #c9b7ed, #9475d1); transition: .3s; }
+
+    .modal {
+        position: fixed; inset: 0; background: rgba(54, 42, 75, .45);
+        display: none; align-items: center; justify-content: center; z-index: 10; padding: 20px;
+    }
+    .modal-content {
+        max-width: 600px; width: 100%; background: #ffffff; border: 1px solid var(--line);
+        border-radius: 22px; padding: 35px; text-align: center;
+        box-shadow: 0 18px 55px rgba(75, 54, 116, .2);
+    }
+    .modal-content h2 { color: var(--purple-dark); font-size: 30px; margin-bottom: 15px; }
+    .modal-content p { color: var(--muted); line-height: 1.55; }
+    .final-score { font-size: 55px; color: var(--purple); margin: 20px; font-weight: 900; }
+
+    /* Pantalla inicial */
+    .intro-screen {
+        position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+        padding: 22px; background: rgba(255,255,255,.97);
+    }
+    .intro-card {
+        width: min(720px, 100%); padding: clamp(25px, 5vw, 48px); text-align: center;
+        background: linear-gradient(145deg, #ffffff, #f7f3fd);
+        border: 1px solid #e5dcf2; border-radius: 26px;
+        box-shadow: 0 18px 60px rgba(101, 75, 156, .14);
+    }
+    .intro-icon {
+        width: 78px; height: 78px; display: grid; place-items: center; margin: 0 auto 18px;
+        border-radius: 24px; background: #eee7fa; color: var(--purple-dark); font-size: 38px;
+    }
+    .intro-card h1 { color: var(--purple-dark); font-size: clamp(28px, 5vw, 42px); margin-bottom: 12px; }
+    .intro-lead { color: #625873; font-size: 17px; line-height: 1.6; margin-bottom: 22px; }
+    .intro-details {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: left; margin: 22px 0 26px;
+    }
+    .intro-detail {
+        background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 15px;
+    }
+    .intro-detail strong { display: block; color: var(--purple-dark); margin-bottom: 7px; }
+    .intro-detail span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .start-button { min-width: 180px; padding: 14px 28px; border-radius: 999px; font-size: 16px; }
+    .intro-note { color: #93899f; font-size: 12px; margin-top: 14px; }
+
+    @media(max-width: 750px) {
+        .game { grid-template-columns: 1fr; }
+        .status-bar { grid-template-columns: repeat(2, 1fr); }
+        .intro-details { grid-template-columns: 1fr; }
+        .intro-detail { text-align: center; }
+        .container { padding-top: 14px; }
+        .panel { padding: 17px; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="intro-screen" id="introScreen">
+    <div class="intro-card">
+        <div class="intro-icon">🛡️</div>
+        <h1>¡Protege la cuenta!</h1>
+        <p class="intro-lead">
+            Tu cuenta está en peligro: alguien está intentando entrar sin permiso.
+            Aprende a defenderla completando tres acciones de seguridad antes de que termine el tiempo.
+        </p>
+        <div class="intro-details">
+            <div class="intro-detail">
+                <strong>🔐 1. Activa el 2FA</strong>
+                <span>Genera un código de seis dígitos e introdúcelo para añadir una segunda capa de protección.</span>
+            </div>
+            <div class="intro-detail">
+                <strong>🔑 2. Crea una contraseña</strong>
+                <span>Escribe una contraseña larga y difícil de adivinar, combinando distintos tipos de caracteres.</span>
+            </div>
+            <div class="intro-detail">
+                <strong>💻 3. Actualiza el sistema</strong>
+                <span>Instala la actualización para corregir fallos y reforzar la seguridad.</span>
+            </div>
+        </div>
+        <button class="start-button" id="startGame">EMPEZAR</button>
+        <p class="intro-note">Tendrás 60 segundos. ¡Piensa rápido y protege tu cuenta!</p>
+    </div>
+</div>
+
+
+<div class="container">
+
+<header>
+    <h1>⚡ CYBER DEFENSE</h1>
+    <p>Protocolo de emergencia: protege la cuenta antes de que el atacante consiga acceso.</p>
+</header>
+
+<div class="alert">
+    ⚠ INTRUSIÓN DETECTADA — Un atacante está intentando acceder a la cuenta.
+    ¡Completa las acciones de seguridad lo más rápido posible!
+</div>
+
+<div class="status-bar">
+    <div class="stat">
+        TIEMPO
+        <span id="time">60</span>
+    </div>
+
+    <div class="stat">
+        PUNTOS
+        <span id="score">0</span>
+    </div>
+
+    <div class="stat">
+        SEGURIDAD
+        <span id="security">0%</span>
+    </div>
+
+    <div class="stat">
+        ACCIONES
+        <span id="actions">0/3</span>
+    </div>
+</div>
+
+<div class="timer-container">
+    <div class="timer">
+        <div class="timer-fill" id="timerFill"></div>
+    </div>
+</div>
+
+<div class="game">
+
+    <section class="panel">
+        <h2>▣ TERMINAL DEL SISTEMA</h2>
+
+        <div class="terminal" id="terminal">
+            <div>> Inicializando sistema...</div>
+            <div class="success">> Firewall: ACTIVO</div>
+            <div class="warning">> Actividad sospechosa detectada.</div>
+            <div class="danger">> ALERTA: intento de acceso no autorizado.</div>
+            <div>> Esperando acciones del operador...</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>▣ ACCIONES DE SEGURIDAD</h2>
+
+        <!-- 2FA -->
+        <div class="task" id="task2fa">
+            <h3>🔐 Activar autenticación de dos factores</h3>
+            <p>Activa una segunda capa de protección para la cuenta.</p>
+
+            <button id="generateCode">GENERAR CÓDIGO</button>
+
+            <div class="twofa-code" id="code"></div>
+
+            <input
+                type="text"
+                id="codeInput"
+                maxlength="6"
+                placeholder="Introduce el código de 6 dígitos"
+                disabled
+            >
+
+            <button id="verifyCode" disabled>VERIFICAR</button>
+        </div>
+
+        <!-- Password -->
+        <div class="task" id="taskPassword">
+            <h3>🔑 Crear contraseña segura</h3>
+            <p>Utiliza mayúsculas, minúsculas, números y símbolos.</p>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Nueva contraseña"
+            >
+
+            <div class="strength">
+                <div class="strength-bar" id="strengthBar"></div>
+            </div>
+
+            <div id="strengthText">Nivel: —</div>
+
+            <br>
+
+            <button id="savePassword" disabled>
+                GUARDAR CONTRASEÑA
+            </button>
+        </div>
+
+        <!-- Update -->
+        <div class="task" id="taskUpdate">
+            <h3>💻 Actualizar software</h3>
+            <p>Instala las actualizaciones de seguridad pendientes.</p>
+
+            <div class="progress">
+                <div class="progress-bar" id="updateProgress"></div>
+            </div>
+
+            <br>
+
+            <button id="updateButton">
+                INSTALAR ACTUALIZACIÓN
+            </button>
+        </div>
+
+    </section>
+
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+
+        <h2 id="resultTitle">¡CUENTA PROTEGIDA!</h2>
+
+        <p id="resultMessage">
+            Has completado las medidas de seguridad.
+        </p>
+
+        <div class="final-score" id="finalScore">0</div>
+
+        <p id="rating"></p>
+
+        <br>
+
+        <button onclick="location.reload()">
+            JUGAR DE NUEVO
+        </button>
+
+    </div>
+</div>
+
+<script>
+
+let timeLeft = 60;
+let score = 0;
+let completed = 0;
+let gameOver = false;
+
+let codeGenerated = false;
+let currentCode = "";
+
+const timeElement = document.getElementById("time");
+const scoreElement = document.getElementById("score");
+const securityElement = document.getElementById("security");
+const actionsElement = document.getElementById("actions");
+const timerFill = document.getElementById("timerFill");
+const terminal = document.getElementById("terminal");
+
+function log(message, type = "") {
+
+    const line = document.createElement("div");
+
+    if (type) {
+        line.className = type;
+    }
+
+    line.textContent = "> " + message;
+
+    terminal.appendChild(line);
+
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+function updateStats() {
+
+    scoreElement.textContent = score;
+    actionsElement.textContent = completed + "/3";
+
+    const security = Math.round((completed / 3) * 100);
+
+    securityElement.textContent = security + "%";
+}
+
+function addPoints(base) {
+
+    const speedBonus = Math.max(0, timeLeft * 2);
+
+    score += base + speedBonus;
+
+    updateStats();
+}
+
+function completeTask(taskId) {
+
+    const task = document.getElementById(taskId);
+
+    if (!task.classList.contains("completed")) {
+
+        task.classList.add("completed");
+
+        completed++;
+
+        updateStats();
+
+        if (completed === 3) {
+            winGame();
+        }
+    }
+}
+
+/* ==========================
+   AUTENTICACIÓN 2FA
+========================== */
+
+document.getElementById("generateCode").addEventListener("click", function() {
+
+    if (gameOver || codeGenerated) return;
+
+    currentCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    document.getElementById("code").textContent = currentCode;
+
+    document.getElementById("codeInput").disabled = false;
+    document.getElementById("verifyCode").disabled = false;
+
+    codeGenerated = true;
+
+    log("Código 2FA generado.", "success");
+    log("Introduce el código para completar la activación.");
+
+    this.disabled = true;
+});
+
+document.getElementById("verifyCode").addEventListener("click", function() {
+
+    if (gameOver) return;
+
+    const input = document.getElementById("codeInput").value;
+
+    if (input === currentCode) {
+
+        addPoints(150);
+
+        log("2FA activado correctamente.", "success");
+        log("La cuenta ahora requiere un segundo factor.");
+
+        document.getElementById("codeInput").disabled = true;
+        this.disabled = true;
+
+        completeTask("task2fa");
+
+    } else {
+
+        score = Math.max(0, score - 20);
+
+        log("Código incorrecto. -20 puntos.", "danger");
+
+        updateStats();
+    }
+});
+
+/* ==========================
+   CONTRASEÑA
+========================== */
+
+const passwordInput = document.getElementById("password");
+const strengthBar = document.getElementById("strengthBar");
+const strengthText = document.getElementById("strengthText");
+const savePassword = document.getElementById("savePassword");
+
+passwordInput.addEventListener("input", function() {
+
+    const password = this.value;
+
+    let strength = 0;
+
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    const percentage = Math.min(100, strength * 16.66);
+
+    strengthBar.style.width = percentage + "%";
+
+    if (strength <= 2) {
+
+        strengthText.textContent = "Nivel: DÉBIL";
+        strengthText.style.color = "#d98296";
+        savePassword.disabled = true;
+
+    } else if (strength <= 4) {
+
+        strengthText.textContent = "Nivel: MEDIO";
+        strengthText.style.color = "#c5a45e";
+        savePassword.disabled = true;
+
+    } else {
+
+        strengthText.textContent = "Nivel: MUY FUERTE";
+        strengthText.style.color = "#75b99b";
+        savePassword.disabled = false;
+    }
+});
+
+savePassword.addEventListener("click", function() {
+
+    if (gameOver) return;
+
+    addPoints(150);
+
+    log("Contraseña actualizada.", "success");
+    log("La contraseña cumple los requisitos de seguridad.");
+
+    passwordInput.disabled = true;
+    this.disabled = true;
+
+    completeTask("taskPassword");
+});
+
+/* ==========================
+   ACTUALIZACIÓN
+========================== */
+
+document.getElementById("updateButton").addEventListener("click", function() {
+
+    if (gameOver) return;
+
+    this.disabled = true;
+
+    let progress = 0;
+
+    log("Descargando actualización de seguridad...", "warning");
+
+    const interval = setInterval(() => {
+
+        progress += Math.random() * 15;
+
+        if (progress >= 100) {
+
+            progress = 100;
+
+            clearInterval(interval);
+
+            addPoints(150);
+
+            log("Actualización instalada correctamente.", "success");
+            log("Vulnerabilidades conocidas corregidas.");
+
+            completeTask("taskUpdate");
+        }
+
+        document.getElementById("updateProgress").style.width =
+            progress + "%";
+
+    }, 250);
+});
+
+/* ==========================
+   TEMPORIZADOR
+========================== */
+
+let timer = null;
+let gameStarted = false;
+
+function startGame() {
+    gameStarted = true;
+    timer = setInterval(() => {
+
+    if (gameOver) {
+        clearInterval(timer);
+        return;
+    }
+
+    timeLeft--;
+
+    timeElement.textContent = timeLeft;
+
+    const percentage = (timeLeft / 60) * 100;
+
+    timerFill.style.width = percentage + "%";
+
+    if (timeLeft <= 10) {
+
+        timerFill.style.background = "#d98296";
+
+        log("¡El atacante está cerca de conseguir acceso!", "danger");
+    }
+
+    if (timeLeft <= 0) {
+
+        clearInterval(timer);
+
+        loseGame();
+    }
+
+}, 1000);
+
+}
+
+document.getElementById("startGame").addEventListener("click", function() {
+    if (gameStarted) return;
+    document.getElementById("introScreen").style.display = "none";
+    startGame();
+    log("Protocolo iniciado. Protege la cuenta antes de que termine el tiempo.", "success");
+});
+
+/* ==========================
+   VICTORIA
+========================== */
+
+function winGame() {
+
+    gameOver = true;
+
+    clearInterval(timer);
+
+    const timeBonus = timeLeft * 10;
+
+    score += timeBonus;
+
+    scoreElement.textContent = score;
+
+    log("================================");
+    log("CUENTA COMPLETAMENTE PROTEGIDA", "success");
+    log("Bonificación por velocidad: +" + timeBonus);
+
+    document.getElementById("modal").style.display = "flex";
+
+    document.getElementById("resultTitle").textContent =
+        "🛡️ ¡CUENTA PROTEGIDA!";
+
+    document.getElementById("resultMessage").textContent =
+        "Has detenido el intento de acceso antes de que fuera demasiado tarde.";
+
+    document.getElementById("finalScore").textContent =
+        score + " PUNTOS";
+
+    let rating;
+
+    if (score >= 700) {
+        rating = "🏆 EXPERTO EN CIBERSEGURIDAD";
+    } else if (score >= 500) {
+        rating = "🥇 DEFENSOR AVANZADO";
+    } else if (score >= 300) {
+        rating = "🥈 BUEN DEFENSOR";
+    } else {
+        rating = "🥉 DEFENSOR NOVATO";
+    }
+
+    document.getElementById("rating").textContent = rating;
+}
+
+/* ==========================
+   DERROTA
+========================== */
+
+function loseGame() {
+
+    gameOver = true;
+
+    document.getElementById("modal").style.display = "flex";
+
+    document.getElementById("resultTitle").textContent =
+        "💀 ¡CUENTA COMPROMETIDA!";
+
+    document.getElementById("resultMessage").textContent =
+        "El atacante consiguió acceder antes de que terminaras las acciones de seguridad.";
+
+    document.getElementById("finalScore").textContent =
+        score + " PUNTOS";
+
+    document.getElementById("rating").textContent =
+        "⚠️ Intenta reaccionar más rápido.";
+}
+
+/* ==========================
+   MENSAJES DINÁMICOS
+========================== */
+
+setTimeout(() => {
+    if (!gameOver) {
+        log("Analizando vulnerabilidades...");
+    }
+}, 4000);
+
+setTimeout(() => {
+    if (!gameOver) {
+        log("El atacante está intentando robar las credenciales.", "danger");
+    }
+}, 9000);
+
+setTimeout(() => {
+    if (!gameOver) {
+        log("Recomendación: activa 2FA inmediatamente.", "warning");
+    }
+}, 15000);
+
+updateStats();
+
+</script>
+
+</body>
+</html>
+```
